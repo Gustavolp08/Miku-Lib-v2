@@ -278,18 +278,18 @@ local Library = {
     CornerRadius = 10,
 
     --// Scheme \\--
-    --// Coquette Miku: superficies rosé escuro + accent teal da Miku \\--
-    IsLightTheme = false,
+    --// Coquette Miku CLARO: rosa dos sonhos + teal da Miku \\--
+    IsLightTheme = true,
     Scheme = {
-        BackgroundColor = Color3.fromRGB(26, 15, 22),
-        MainColor = Color3.fromRGB(38, 22, 31),
-        AccentColor = Color3.fromRGB(64, 224, 208),
-        OutlineColor = Color3.fromRGB(66, 42, 54),
-        FontColor = Color3.fromRGB(255, 236, 244),
+        BackgroundColor = Color3.fromRGB(255, 232, 243),
+        MainColor = Color3.fromRGB(255, 209, 232),
+        AccentColor = Color3.fromRGB(0, 191, 178),
+        OutlineColor = Color3.fromRGB(246, 154, 199),
+        FontColor = Color3.fromRGB(94, 32, 60),
         Font = Font.fromEnum(Enum.Font.BuilderSans),
 
-        RedColor = Color3.fromRGB(255, 105, 130),
-        DestructiveColor = Color3.fromRGB(235, 80, 110),
+        RedColor = Color3.fromRGB(214, 40, 90),
+        DestructiveColor = Color3.fromRGB(200, 30, 80),
         DarkColor = Color3.new(0, 0, 0),
         WhiteColor = Color3.new(1, 1, 1),
 
@@ -15182,7 +15182,21 @@ function Library:CreateWindow(WindowInfo)
             TextSize = 18,
             TextColor3 = Info.TitleColor or "FontColor",
             TextXAlignment = Enum.TextXAlignment.Left,
-            LayoutOrder = 2,
+            LayoutOrder = 3,
+            ZIndex = 2,
+            Parent = TitleRow,
+        })
+
+        --// Coracaonho coquette antes do titulo (tintido com o accent) \\--
+        New("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.fromOffset(16, 18),
+            Text = "\u{2661}",
+            TextSize = 16,
+            TextColor3 = "AccentColor",
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            LayoutOrder = if Info.Icon then 2 else 1,
             ZIndex = 2,
             Parent = TitleRow,
         })

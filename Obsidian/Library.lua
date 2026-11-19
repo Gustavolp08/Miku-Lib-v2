@@ -275,22 +275,21 @@ local Library = {
     OriginalMinSize = Vector2.new(480, 360),
     MinSize = Vector2.new(480, 360),
     DPIScale = 1,
-    CornerRadius = 10,
+    CornerRadius = 8,
 
-    --// Scheme \\--
-    --// Coquette Miku CLARO: rosa dos sonhos + teal da Miku \\--
-    IsLightTheme = true,
+    --// Scheme: Miku cyber (dark slate + turquoise) \\--
+    IsLightTheme = false,
     Scheme = {
-        BackgroundColor = Color3.fromRGB(255, 232, 243),
-        MainColor = Color3.fromRGB(255, 209, 232),
-        AccentColor = Color3.fromRGB(0, 191, 178),
-        OutlineColor = Color3.fromRGB(246, 154, 199),
-        FontColor = Color3.fromRGB(94, 32, 60),
+        BackgroundColor = Color3.fromRGB(20, 24, 31),
+        MainColor = Color3.fromRGB(28, 34, 43),
+        AccentColor = Color3.fromRGB(57, 224, 203),
+        OutlineColor = Color3.fromRGB(48, 60, 70),
+        FontColor = Color3.fromRGB(225, 241, 240),
         Font = Font.fromEnum(Enum.Font.BuilderSans),
 
-        RedColor = Color3.fromRGB(214, 40, 90),
-        DestructiveColor = Color3.fromRGB(200, 30, 80),
-        DarkColor = Color3.new(0, 0, 0),
+        RedColor = Color3.fromRGB(255, 91, 112),
+        DestructiveColor = Color3.fromRGB(235, 73, 96),
+        DarkColor = Color3.fromRGB(10, 13, 18),
         WhiteColor = Color3.new(1, 1, 1),
 
         BackgroundImage = ""
@@ -410,11 +409,11 @@ local Templates = {
         SearchbarSize = UDim2.fromScale(1, 1),
         GlobalSearch = false,
 
-        CornerRadius = 12,
+        CornerRadius = 8,
         NotifySide = "Right",
         ShowCustomCursor = true,
 
-        Font = Enum.Font.Code,
+        Font = Enum.Font.BuilderSans,
         ToggleKeybind = Enum.KeyCode.RightControl,
 
         ShowMobileButtons = true,
@@ -450,7 +449,7 @@ local Templates = {
 
         TabTransitionTime = 0.22,
         TabSwipeOffset = 26,
-        TabSwipeFrom = "bottom",
+        TabSwipeFrom = "right",
         TabButtonsStyle = {
             Gap = 0,
             Padding = 0,

@@ -4665,6 +4665,10 @@ do
 
             function KeybindsToggle:SetVisibility(Visibility)
                 Holder.Visible = Visibility
+                local ActiveFeatureList = Library.KeybindMenu
+                if ActiveFeatureList and ActiveFeatureList.RefreshVisibility then
+                    ActiveFeatureList:RefreshVisibility()
+                end
             end
 
             function KeybindsToggle:SetNormal(Normal)
@@ -5491,6 +5495,10 @@ do
                 local KTIdx = table.find(Library.KeybindToggles, KeybindsToggle)
                 if KTIdx then
                     table.remove(Library.KeybindToggles, KTIdx)
+                end
+                local ActiveFeatureList = Library.KeybindMenu
+                if ActiveFeatureList and ActiveFeatureList.RefreshVisibility then
+                    ActiveFeatureList:RefreshVisibility()
                 end
             end
 
@@ -8444,8 +8452,13 @@ do
             Type = "Slider",
         }
 
-        local BarHeight = Library.IsMobile and 36 or 22
-        local HolderHeight = Info.Compact and BarHeight or (BarHeight + 20)
+        local IsMobileSlider = Library.IsMobile
+        local BarHeight = IsMobileSlider and 40 or 22
+        local HolderHeight = IsMobileSlider and 64 or 26
+        local LabelScale = IsMobileSlider and 0.58 or 0.28
+        local ValueScale = Info.Compact and (IsMobileSlider and 1 or 0.42) or (IsMobileSlider and 0.38 or 0.16)
+        local BarScale = IsMobileSlider and 1 or (Info.Compact and 0.52 or 0.50)
+        local ValueSize = UDim2.new(ValueScale, 0, 1, 0)
         local FillTween
         local KnobTween
         local KnobScaleTween
@@ -8467,25 +8480,52 @@ do
             Visible = Slider.Visible,
             Parent = Container,
         })
+        New("UIListLayout", {
+            FillDirection = IsMobileSlider and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal,
+            Padding = UDim.new(0, IsMobileSlider and 4 or 5),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = Holder,
+        })
+
+        local SliderInfoRow
+        local SliderValueParent = Holder
+        if IsMobileSlider then
+            SliderInfoRow = New("Frame", {
+                BackgroundTransparency = 1,
+                LayoutOrder = 1,
+                Size = UDim2.new(1, 0, 0, 16),
+                Parent = Holder,
+            })
+            SliderValueParent = SliderInfoRow
+            New("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                Padding = UDim.new(0, 4),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Parent = SliderInfoRow,
+            })
+        end
 
         local SliderLabel
         if not Info.Compact then
             SliderLabel = New("TextLabel", {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, -118, 0, 16),
+                LayoutOrder = 1,
+                Size = UDim2.new(LabelScale, 0, 1, 0),
                 Text = Slider.Text,
                 TextSize = 14,
+                TextTruncate = Enum.TextTruncate.AtEnd,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Holder,
+                Parent = SliderValueParent,
             })
         end
 
         local Bar = New("TextButton", {
             Active = not Slider.Disabled,
-            AnchorPoint = Vector2.new(0, 1),
             BackgroundTransparency = 1,
-            Position = UDim2.fromScale(0, 1),
-            Size = UDim2.new(1, 0, 0, BarHeight),
+            LayoutOrder = IsMobileSlider and 2 or 3,
+            Size = UDim2.new(BarScale, 0, 0, BarHeight),
             Text = "",
             Parent = Holder,
         })
@@ -8493,13 +8533,11 @@ do
         local Track = New("Frame", {
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = "MainColor",
-            Position = UDim2.new(0, Library.IsMobile and 9 or 7, 0.5, 0),
-            Size = UDim2.new(1, -(Library.IsMobile and 18 or 14), 0, Library.IsMobile and 5 or 4),
+            Position = UDim2.new(0, IsMobileSlider and 9 or 7, 0.5, 0),
+            Size = UDim2.new(1, -(IsMobileSlider and 18 or 14), 0, IsMobileSlider and 5 or 4),
             Parent = Bar,
         })
-
         AddCorner(Track)
-
 
         local Fill = New("Frame", {
             BackgroundColor3 = "AccentColor",
@@ -8507,22 +8545,18 @@ do
             ZIndex = Track.ZIndex + 1,
             Parent = Track,
         })
-
         AddCorner(Fill)
-
 
         local Knob = New("Frame", {
             AnchorPoint = Vector2.new(0.5, 0.5),
             BackgroundColor3 = "FontColor",
             Position = UDim2.fromScale(0, 0.5),
-            Size = UDim2.fromOffset(Library.IsMobile and 18 or 14, Library.IsMobile and 18 or 14),
+            Size = UDim2.fromOffset(IsMobileSlider and 18 or 14, IsMobileSlider and 18 or 14),
             Visible = not Info.Compact,
             ZIndex = Track.ZIndex + 2,
             Parent = Track,
         })
-
         AddCorner(Knob)
-
         local KnobStroke = New("UIStroke", {
             Color = "AccentColor",
             Thickness = 2,
@@ -8534,32 +8568,31 @@ do
         })
 
         local DisplayLabel = New("TextLabel", {
-            AnchorPoint = if Info.Compact then Vector2.zero else Vector2.new(1, 0),
             BackgroundTransparency = 1,
-            Position = if Info.Compact then UDim2.fromScale(0, 0) else UDim2.new(1, 0, 0, 0),
-            Size = if Info.Compact then UDim2.fromScale(1, 1) else UDim2.new(0, 110, 0, 16),
+            LayoutOrder = if Info.Compact then 1 else 2,
+            Size = ValueSize,
             Text = "",
+            TextColor3 = "AccentColor",
             TextSize = 13,
             TextTruncate = Enum.TextTruncate.AtEnd,
-            TextXAlignment = Info.Compact and Enum.TextXAlignment.Center or Enum.TextXAlignment.Right,
+            TextXAlignment = if Info.Compact then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right,
             ZIndex = Bar.ZIndex + 3,
-            Parent = if Info.Compact then Bar else Holder,
+            Parent = SliderValueParent,
         })
 
         local InputTextBox
         if Info.AllowRightClickInput then
             InputTextBox = New("TextBox", {
-                AnchorPoint = if Info.Compact then Vector2.zero else Vector2.new(1, 0),
                 BackgroundColor3 = "MainColor",
-                Position = if Info.Compact then UDim2.fromScale(0, 0) else UDim2.new(1, 0, 0, 0),
-                Size = if Info.Compact then UDim2.fromScale(1, 1) else UDim2.new(0, 96, 0, 16),
+                LayoutOrder = DisplayLabel.LayoutOrder,
+                Size = ValueSize,
                 Text = "",
                 TextSize = 14,
-                TextXAlignment = Enum.TextXAlignment.Right,
-                ZIndex = Bar.ZIndex + 4,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                ZIndex = DisplayLabel.ZIndex + 1,
                 Visible = false,
                 ClearTextOnFocus = false,
-                Parent = if Info.Compact then Bar else Holder,
+                Parent = SliderValueParent,
             })
             New("UIStroke", {
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
@@ -8567,9 +8600,6 @@ do
                 LineJoinMode = Enum.LineJoinMode.Round,
                 Parent = InputTextBox,
             })
-        end
-
-        if InputTextBox then
             table.insert(
                 Library.Corners,
                 New("UICorner", {
@@ -8775,6 +8805,7 @@ do
             table.insert(Slider.Connections, InputTextBox.FocusLost:Connect(function()
                 InputTextBox.Visible = false
                 DisplayLabel.Visible = true
+                DisplayLabel.Size = UDim2.new(ValueScale, 0, 1, 0)
 
                 local Num = tonumber(InputTextBox.Text)
                 if not Num then
@@ -8807,6 +8838,7 @@ do
 
                 if IsRightClick or IsDoubleTap then
                     InputTextBox.Text = tostring(Slider.Value)
+                    DisplayLabel.Size = UDim2.new(0, 0, 1, 0)
                     InputTextBox.Visible = true
                     DisplayLabel.Visible = false
 
@@ -11752,6 +11784,12 @@ function Library:Notify(...)
     return Data
 end
 
+function Library:SetActiveFeatureListVisible(Visible: boolean)
+    local ActiveFeatureList = Library.KeybindMenu
+    if ActiveFeatureList then
+        ActiveFeatureList:SetVisible(Visible)
+    end
+end
 function Library:CreateWindow(WindowInfo)
     WindowInfo = Library:Validate(WindowInfo, Templates.Window)
     local ViewportSize: Vector2 = workspace.CurrentCamera.ViewportSize
@@ -11843,7 +11881,7 @@ function Library:CreateWindow(WindowInfo)
     local RefreshWindowTitleSize
 
     do
-        local KeybindFrame, KeybindContainer, _, KeybindDivider, KeybindLabelPadding = Library:AddDraggableMenu("Keybinds")
+        local KeybindFrame, KeybindContainer, _, KeybindDivider, KeybindLabelPadding = Library:AddDraggableMenu("Active features")
         KeybindFrame.AnchorPoint = Vector2.new(0, 0.5)
         KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         KeybindFrame.Visible = false
@@ -11899,6 +11937,7 @@ function Library:CreateWindow(WindowInfo)
 
         local KeybindMenu = {
             VisibilityControl = false,
+            Visible = true,
             Collapsed = false,
             SettingsOpen = false,
             Frame = KeybindFrame,
@@ -11906,6 +11945,22 @@ function Library:CreateWindow(WindowInfo)
             SettingsFrame = SettingsFrame,
             SettingsContainer = SettingsContainer,
         }
+
+        function KeybindMenu:RefreshVisibility()
+            local HasVisibleEntry = false
+            for _, Entry in KeybindContainer:GetChildren() do
+                if Entry:IsA("GuiObject") and Entry.Visible then
+                    HasVisibleEntry = true
+                    break
+                end
+            end
+            KeybindFrame.Visible = self.Visible and HasVisibleEntry
+        end
+
+        function KeybindMenu:SetVisible(Visible: boolean)
+            self.Visible = Visible == true
+            self:RefreshVisibility()
+        end
 
         function KeybindMenu:RefreshSettings()
             for _, Child in SettingsContainer:GetChildren() do
@@ -12335,18 +12390,39 @@ function Library:CreateWindow(WindowInfo)
             }):Play()
         end))
 
-        local SearchIcon = Library:GetIcon("search")
-        if SearchIcon then
-            Library:CreateIcon(SearchIcon, {
-                AnchorPoint = Vector2.new(0, 0.5),
-                ImageColor3 = "FontColor",
-                ImageTransparency = 0.45,
-                Position = UDim2.new(0, 8, 0.5, 0),
-                Size = UDim2.fromOffset(16, 16),
-                ZIndex = SearchBox.ZIndex + 1,
-                Parent = SearchBox,
-            })
-        end
+        local SearchIcon = New("Frame", {
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 8, 0.5, 0),
+            Size = UDim2.fromOffset(16, 16),
+            ZIndex = SearchBox.ZIndex + 1,
+            Parent = SearchBox,
+        })
+        local SearchLens = New("Frame", {
+            BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(0, 0),
+            Size = UDim2.fromOffset(10, 10),
+            ZIndex = SearchIcon.ZIndex,
+            Parent = SearchIcon,
+        })
+        New("UICorner", {
+            CornerRadius = UDim.new(1, 0),
+            Parent = SearchLens,
+        })
+        New("UIStroke", {
+            Color = "FontColor",
+            Thickness = 1.5,
+            Parent = SearchLens,
+        })
+        New("Frame", {
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = "FontColor",
+            Position = UDim2.fromOffset(9, 10),
+            Size = UDim2.fromOffset(6, 1.5),
+            Rotation = 45,
+            ZIndex = SearchIcon.ZIndex,
+            Parent = SearchIcon,
+        })
 
         if MoveIcon then
             Library:CreateIcon(MoveIcon, {

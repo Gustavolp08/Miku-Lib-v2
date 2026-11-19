@@ -7665,7 +7665,7 @@ do
             Toggle:Display()
         end
 
-        function Toggle:Display()
+        function Toggle:Display(Animate: boolean?)
             if Library.Unloaded then
                 return
             end
@@ -7875,7 +7875,7 @@ do
         local Button = New("TextButton", {
             Active = not Toggle.Disabled,
             BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 0, Library.IsMobile and 26 or 18),
+            Size = UDim2.new(1, 0, 0, Library.IsMobile and 44 or 30),
             Text = "",
             Visible = Toggle.Visible,
             Parent = Container,
@@ -7883,7 +7883,7 @@ do
 
         local Label = New("TextLabel", {
             BackgroundTransparency = 1,
-            Size = UDim2.new(1, -38, 1, 0),
+            Size = UDim2.new(1, -(Library.IsMobile and 50 or 44), 1, 0),
             Text = Toggle.Text,
             TextSize = 14,
             TextTransparency = 0.4,
@@ -7900,10 +7900,10 @@ do
         })
 
         local Switch = New("Frame", {
-            AnchorPoint = Vector2.new(1, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
             BackgroundColor3 = "MainColor",
-            Position = UDim2.fromScale(1, 0),
-            Size = UDim2.fromOffset(32, 18),
+            Position = UDim2.new(1, 0, 0.5, 0),
+            Size = UDim2.fromOffset(Library.IsMobile and 42 or 36, Library.IsMobile and 24 or 20),
             Parent = Button,
         })
         New("UICorner", {
@@ -7911,16 +7911,22 @@ do
             Parent = Switch,
         })
         New("UIPadding", {
-            PaddingBottom = UDim.new(0, 2),
-            PaddingLeft = UDim.new(0, 2),
-            PaddingRight = UDim.new(0, 2),
-            PaddingTop = UDim.new(0, 2),
+            PaddingBottom = UDim.new(0, Library.IsMobile and 3 or 2),
+            PaddingLeft = UDim.new(0, Library.IsMobile and 3 or 2),
+            PaddingRight = UDim.new(0, Library.IsMobile and 3 or 2),
+            PaddingTop = UDim.new(0, Library.IsMobile and 3 or 2),
             Parent = Switch,
         })
         local SwitchStroke = New("UIStroke", {
             Color = "OutlineColor",
+            Thickness = 1.5,
             Parent = Switch,
         })
+        local SwitchScale = New("UIScale", {
+            Scale = 1,
+            Parent = Switch,
+        })
+        local SwitchScaleTween
 
         local Ball = New("Frame", {
             BackgroundColor3 = "FontColor",
@@ -7937,7 +7943,7 @@ do
             Toggle:Display()
         end
 
-        function Toggle:Display()
+        function Toggle:Display(Animate: boolean?)
             if Library.Unloaded then
                 return
             end
@@ -7962,8 +7968,20 @@ do
                 Library.Registry[Ball].BackgroundColor3 = function()
                     return Library:GetDarkerColor(Library.Scheme.FontColor)
                 end
+                SwitchScale.Scale = 1
 
                 return
+            end
+
+            if Animate then
+                if SwitchScaleTween then
+                    SwitchScaleTween:Cancel()
+                end
+                SwitchScale.Scale = 0.94
+                SwitchScaleTween = TweenService:Create(SwitchScale, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Scale = 1,
+                })
+                SwitchScaleTween:Play()
             end
 
             TweenService:Create(Label, Library.TweenInfo, {
@@ -7994,7 +8012,7 @@ do
 
         function Toggle:SetValue(Value)
             Toggle.Value = Value
-            Toggle:Display()
+            Toggle:Display(true)
 
             for _, Addon in Toggle.Addons do
                 if Addon.Type == "KeyPicker" and Addon.SyncToggleState then
@@ -8426,9 +8444,26 @@ do
             Type = "Slider",
         }
 
+        local BarHeight = Library.IsMobile and 36 or 22
+        local HolderHeight = Info.Compact and BarHeight or (BarHeight + 20)
+        local FillTween
+        local KnobTween
+        local KnobScaleTween
+        local IsDragging = false
+
+        local function AddCorner(Frame: GuiObject)
+            table.insert(
+                Library.Corners,
+                New("UICorner", {
+                    CornerRadius = UDim.new(0, Library.CornerRadius / 2),
+                    Parent = Frame,
+                })
+            )
+        end
+
         local Holder = New("Frame", {
             BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 0, Info.Compact and 15 or 33),
+            Size = UDim2.new(1, 0, 0, HolderHeight),
             Visible = Slider.Visible,
             Parent = Container,
         })
@@ -8437,7 +8472,7 @@ do
         if not Info.Compact then
             SliderLabel = New("TextLabel", {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 14),
+                Size = UDim2.new(1, -118, 0, 16),
                 Text = Slider.Text,
                 TextSize = 14,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -8448,75 +8483,101 @@ do
         local Bar = New("TextButton", {
             Active = not Slider.Disabled,
             AnchorPoint = Vector2.new(0, 1),
-            BackgroundColor3 = "MainColor",
+            BackgroundTransparency = 1,
             Position = UDim2.fromScale(0, 1),
-            Size = UDim2.new(1, 0, 0, Library.IsMobile and 24 or 15),
+            Size = UDim2.new(1, 0, 0, BarHeight),
             Text = "",
             Parent = Holder,
         })
 
-        New("UIStroke", {
-            Color = "OutlineColor",
+        local Track = New("Frame", {
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = "MainColor",
+            Position = UDim2.new(0, Library.IsMobile and 9 or 7, 0.5, 0),
+            Size = UDim2.new(1, -(Library.IsMobile and 18 or 14), 0, Library.IsMobile and 5 or 4),
             Parent = Bar,
         })
 
-        local DisplayLabel = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.fromScale(1, 1),
-            Text = "",
-            TextSize = 14,
-            ZIndex = Bar.ZIndex + 2,
-            Parent = Bar,
+        AddCorner(Track)
+
+
+        local Fill = New("Frame", {
+            BackgroundColor3 = "AccentColor",
+            Size = UDim2.fromScale(0, 1),
+            ZIndex = Track.ZIndex + 1,
+            Parent = Track,
         })
-        New("UIStroke", {
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-            Color = GetTextStrokeColor,
-            LineJoinMode = Enum.LineJoinMode.Miter,
-            Parent = DisplayLabel,
+
+        AddCorner(Fill)
+
+
+        local Knob = New("Frame", {
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = "FontColor",
+            Position = UDim2.fromScale(0, 0.5),
+            Size = UDim2.fromOffset(Library.IsMobile and 18 or 14, Library.IsMobile and 18 or 14),
+            Visible = not Info.Compact,
+            ZIndex = Track.ZIndex + 2,
+            Parent = Track,
+        })
+
+        AddCorner(Knob)
+
+        local KnobStroke = New("UIStroke", {
+            Color = "AccentColor",
+            Thickness = 2,
+            Parent = Knob,
+        })
+        local KnobScale = New("UIScale", {
+            Scale = 1,
+            Parent = Knob,
+        })
+
+        local DisplayLabel = New("TextLabel", {
+            AnchorPoint = if Info.Compact then Vector2.zero else Vector2.new(1, 0),
+            BackgroundTransparency = 1,
+            Position = if Info.Compact then UDim2.fromScale(0, 0) else UDim2.new(1, 0, 0, 0),
+            Size = if Info.Compact then UDim2.fromScale(1, 1) else UDim2.new(0, 110, 0, 16),
+            Text = "",
+            TextSize = 13,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            TextXAlignment = Info.Compact and Enum.TextXAlignment.Center or Enum.TextXAlignment.Right,
+            ZIndex = Bar.ZIndex + 3,
+            Parent = if Info.Compact then Bar else Holder,
         })
 
         local InputTextBox
         if Info.AllowRightClickInput then
             InputTextBox = New("TextBox", {
-                BackgroundTransparency = 1,
-                Size = UDim2.fromScale(1, 1),
+                AnchorPoint = if Info.Compact then Vector2.zero else Vector2.new(1, 0),
+                BackgroundColor3 = "MainColor",
+                Position = if Info.Compact then UDim2.fromScale(0, 0) else UDim2.new(1, 0, 0, 0),
+                Size = if Info.Compact then UDim2.fromScale(1, 1) else UDim2.new(0, 96, 0, 16),
                 Text = "",
                 TextSize = 14,
-                ZIndex = Bar.ZIndex + 3,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                ZIndex = Bar.ZIndex + 4,
                 Visible = false,
                 ClearTextOnFocus = false,
-                Parent = Bar,
+                Parent = if Info.Compact then Bar else Holder,
             })
             New("UIStroke", {
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-                Color = GetTextStrokeColor,
-                LineJoinMode = Enum.LineJoinMode.Miter,
+                Color = "AccentColor",
+                LineJoinMode = Enum.LineJoinMode.Round,
                 Parent = InputTextBox,
             })
         end
 
-        local Fill = New("Frame", {
-            BackgroundColor3 = "AccentColor",
-            Size = UDim2.fromScale(0.5, 1),
-            ZIndex = Bar.ZIndex + 1,
-            Parent = Bar,
-        })
-
-        table.insert(
-            Library.Corners,
-            New("UICorner", {
-                CornerRadius = UDim.new(0, Library.CornerRadius / 2),
-                Parent = Bar,
-            })
-        )
-
-        table.insert(
-            Library.Corners,
-            New("UICorner", {
-                CornerRadius = UDim.new(0, Library.CornerRadius / 2),
-                Parent = Fill,
-            })
-        )
+        if InputTextBox then
+            table.insert(
+                Library.Corners,
+                New("UICorner", {
+                    CornerRadius = UDim.new(0, Library.CornerRadius / 2),
+                    Parent = InputTextBox,
+                })
+            )
+        end
 
         function Slider:UpdateColors()
             if Library.Unloaded then
@@ -8532,11 +8593,18 @@ do
                 InputTextBox.TextTransparency = Slider.Disabled and 0.8 or 0
             end
 
+            Track.BackgroundColor3 = Library.Scheme.MainColor
+            Library.Registry[Track].BackgroundColor3 = "MainColor"
+            Knob.BackgroundColor3 = Library.Scheme.FontColor
+            Knob.BackgroundTransparency = Slider.Disabled and 0.3 or 0
+            KnobStroke.Color = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
+            KnobStroke.Transparency = Slider.Disabled and 0.6 or 0
+            Library.Registry[KnobStroke].Color = Slider.Disabled and "OutlineColor" or "AccentColor"
             Fill.BackgroundColor3 = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
             Library.Registry[Fill].BackgroundColor3 = Slider.Disabled and "OutlineColor" or "AccentColor"
         end
 
-        function Slider:Display()
+        function Slider:Display(Animate: boolean?)
             if Library.Unloaded then
                 return
             end
@@ -8567,8 +8635,34 @@ do
                 end
             end
 
-            local X = (Slider.Value - Slider.Min) / (Slider.Max - Slider.Min)
-            Fill.Size = UDim2.fromScale(X, 1)
+            local Range = Slider.Max - Slider.Min
+            local X = if Range == 0 then 0 else math.clamp((Slider.Value - Slider.Min) / Range, 0, 1)
+            local FillSize = UDim2.fromScale(X, 1)
+            local KnobPosition = UDim2.fromScale(X, 0.5)
+
+            if Animate and not IsDragging then
+                if FillTween then
+                    FillTween:Cancel()
+                end
+                if KnobTween then
+                    KnobTween:Cancel()
+                end
+                FillTween = TweenService:Create(Fill, Library.TweenInfo, { Size = FillSize })
+                KnobTween = TweenService:Create(Knob, Library.TweenInfo, { Position = KnobPosition })
+                FillTween:Play()
+                KnobTween:Play()
+            else
+                if FillTween then
+                    FillTween:Cancel()
+                    FillTween = nil
+                end
+                if KnobTween then
+                    KnobTween:Cancel()
+                    KnobTween = nil
+                end
+                Fill.Size = FillSize
+                Knob.Position = KnobPosition
+            end
         end
 
         function Slider:OnChanged(Func)
@@ -8609,7 +8703,7 @@ do
             Num = math.clamp(Num, Slider.Min, Slider.Max)
 
             Slider.Value = Num
-            Slider:Display()
+            Slider:Display(true)
 
             Slider:RunChanged()
         end
@@ -8725,6 +8819,25 @@ do
                 return
             end
 
+            local TouchPosition = Input.Position
+            local TouchChangedConnection
+            if Input.UserInputType == Enum.UserInputType.Touch then
+                TouchChangedConnection = UserInputService.InputChanged:Connect(function(Movement)
+                    if Movement.UserInputType == Enum.UserInputType.Touch then
+                        TouchPosition = Movement.Position
+                    end
+                end)
+            end
+
+            IsDragging = true
+            if KnobScaleTween then
+                KnobScaleTween:Cancel()
+            end
+            KnobScaleTween = TweenService:Create(KnobScale, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Scale = 1.12,
+            })
+            KnobScaleTween:Play()
+
             if Library.ActiveTab then
                 for _, Side in Library.ActiveTab.Sides do
                     Side.ScrollingEnabled = false
@@ -8736,19 +8849,32 @@ do
             end
 
             while IsDragInput(Input) and not Slider.Destroyed do
-                local Location = Mouse.X
-                local Scale = math.clamp((Location - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+                local Location = Input.UserInputType == Enum.UserInputType.Touch and TouchPosition.X or Mouse.X
+                local Scale = math.clamp((Location - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
 
                 local OldValue = Slider.Value
                 Slider.Value = Round(Slider.Min + ((Slider.Max - Slider.Min) * Scale), Slider.Rounding)
 
-                Slider:Display()
+                Slider:Display(false)
                 if Slider.Value ~= OldValue then
                     Slider:RunChanged()
                 end
 
                 RunService.RenderStepped:Wait()
             end
+
+            IsDragging = false
+            if TouchChangedConnection then
+                TouchChangedConnection:Disconnect()
+                TouchChangedConnection = nil
+            end
+            if KnobScaleTween then
+                KnobScaleTween:Cancel()
+            end
+            KnobScaleTween = TweenService:Create(KnobScale, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Scale = 1,
+            })
+            KnobScaleTween:Play()
 
             if Library.ActiveTab then
                 for _, Side in Library.ActiveTab.Sides do
@@ -8779,6 +8905,10 @@ do
 
         function Slider:Destroy()
             Slider.Destroyed = true
+
+            if FillTween then FillTween:Cancel() end
+            if KnobTween then KnobTween:Cancel() end
+            if KnobScaleTween then KnobScaleTween:Cancel() end
 
             if Slider.Connections then
                 for _, Connection in Slider.Connections do
@@ -12181,7 +12311,7 @@ function Library:CreateWindow(WindowInfo)
         )
         New("UIPadding", {
             PaddingBottom = UDim.new(0, 4),
-            PaddingLeft = UDim.new(0, 34),
+            PaddingLeft = UDim.new(0, 30),
             PaddingRight = UDim.new(0, 12),
             PaddingTop = UDim.new(0, 4),
             Parent = SearchBox,
@@ -12208,10 +12338,12 @@ function Library:CreateWindow(WindowInfo)
         local SearchIcon = Library:GetIcon("search")
         if SearchIcon then
             Library:CreateIcon(SearchIcon, {
+                AnchorPoint = Vector2.new(0, 0.5),
                 ImageColor3 = "FontColor",
-                ImageTransparency = 0.5,
-                Size = UDim2.fromScale(1, 1),
-                SizeConstraint = Enum.SizeConstraint.RelativeYY,
+                ImageTransparency = 0.45,
+                Position = UDim2.new(0, 8, 0.5, 0),
+                Size = UDim2.fromOffset(16, 16),
+                ZIndex = SearchBox.ZIndex + 1,
                 Parent = SearchBox,
             })
         end

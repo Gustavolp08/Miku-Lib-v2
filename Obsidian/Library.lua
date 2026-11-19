@@ -8540,16 +8540,20 @@ do
         AddCorner(Track)
 
         local Fill = New("Frame", {
-            BackgroundColor3 = "AccentColor",
+            BackgroundColor3 = "WhiteColor",
             Size = UDim2.fromScale(0, 1),
             ZIndex = Track.ZIndex + 1,
             Parent = Track,
         })
         AddCorner(Fill)
+        local FillGradient = New("UIGradient", {
+            Color = ColorSequence.new(Library:GetDarkerColor(Library.Scheme.AccentColor), Library.Scheme.AccentColor),
+            Parent = Fill,
+        })
 
         local Knob = New("Frame", {
             AnchorPoint = Vector2.new(0.5, 0.5),
-            BackgroundColor3 = "FontColor",
+            BackgroundColor3 = "DarkColor",
             Position = UDim2.fromScale(0, 0.5),
             Size = UDim2.fromOffset(IsMobileSlider and 18 or 14, IsMobileSlider and 18 or 14),
             Visible = not Info.Compact,
@@ -8559,7 +8563,7 @@ do
         AddCorner(Knob)
         local KnobStroke = New("UIStroke", {
             Color = "AccentColor",
-            Thickness = 2,
+            Thickness = 1.5,
             Parent = Knob,
         })
         local KnobScale = New("UIScale", {
@@ -8625,13 +8629,17 @@ do
 
             Track.BackgroundColor3 = Library.Scheme.MainColor
             Library.Registry[Track].BackgroundColor3 = "MainColor"
-            Knob.BackgroundColor3 = Library.Scheme.FontColor
+            Track.BackgroundTransparency = Slider.Disabled and 0.35 or 0
+            local FillColor = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
+            FillGradient.Color = ColorSequence.new(Library:GetDarkerColor(FillColor), FillColor)
+            Knob.BackgroundColor3 = Library.Scheme.DarkColor
+            Library.Registry[Knob].BackgroundColor3 = "DarkColor"
             Knob.BackgroundTransparency = Slider.Disabled and 0.3 or 0
             KnobStroke.Color = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
             KnobStroke.Transparency = Slider.Disabled and 0.6 or 0
             Library.Registry[KnobStroke].Color = Slider.Disabled and "OutlineColor" or "AccentColor"
-            Fill.BackgroundColor3 = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
-            Library.Registry[Fill].BackgroundColor3 = Slider.Disabled and "OutlineColor" or "AccentColor"
+            Fill.BackgroundColor3 = Library.Scheme.WhiteColor
+            Library.Registry[Fill].BackgroundColor3 = "WhiteColor"
         end
 
         function Slider:Display(Animate: boolean?)
@@ -12393,10 +12401,10 @@ function Library:CreateWindow(WindowInfo)
         local SearchIcon = New("Frame", {
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 8, 0.5, 0),
+            Position = UDim2.fromOffset(0, 0),
             Size = UDim2.fromOffset(16, 16),
             ZIndex = SearchBox.ZIndex + 1,
-            Parent = SearchBox,
+            Parent = TopBar,
         })
         local SearchLens = New("Frame", {
             BackgroundTransparency = 1,
@@ -12423,6 +12431,25 @@ function Library:CreateWindow(WindowInfo)
             ZIndex = SearchIcon.ZIndex,
             Parent = SearchIcon,
         })
+
+        local function UpdateSearchIconPosition()
+            if not (SearchIcon.Parent and SearchBox.Parent and TopBar.Parent) then
+                return
+            end
+
+            local RelativePosition = SearchBox.AbsolutePosition - TopBar.AbsolutePosition
+            SearchIcon.Position = UDim2.fromOffset(
+                RelativePosition.X + 8,
+                RelativePosition.Y + SearchBox.AbsoluteSize.Y / 2
+            )
+            SearchIcon.Visible = SearchBox.Visible
+        end
+
+        UpdateSearchIconPosition()
+        Library:GiveSignal(SearchBox:GetPropertyChangedSignal("AbsolutePosition"):Connect(UpdateSearchIconPosition))
+        Library:GiveSignal(SearchBox:GetPropertyChangedSignal("AbsoluteSize"):Connect(UpdateSearchIconPosition))
+        Library:GiveSignal(SearchBox:GetPropertyChangedSignal("Visible"):Connect(UpdateSearchIconPosition))
+
 
         if MoveIcon then
             Library:CreateIcon(MoveIcon, {

@@ -219,21 +219,21 @@ local Library = {
     --// Animations \\--
     TweenInfo = TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
 
-    TabTransitionInfo = TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    TabTransitionInfo = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     TabSwipeOffset = 26,
     TabSwipeFrom = "bottom",
 
-    WindowAnimationInfo = TweenInfo.new(0.42, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-    DropdownTransitionInfo = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-    KeyPickerTransitionInfo = TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    WindowAnimationInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    DropdownTransitionInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    KeyPickerTransitionInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
-    GroupboxTweenInfo = TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-    RotatingChevronTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    GroupboxTweenInfo = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    RotatingChevronTweenInfo = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
-    --// Mola do switch/checkbox (coquette bounce) \\--
-    SwitchTweenInfo = TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    --// Switch and checkbox motion \\--
+    SwitchTweenInfo = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
-    --// Animacoes ligadas por padrao (build Miku) \\--
+    --// Lightweight interface animations \\--
     Animations = {
         ToggleWindow = true,
         TabSwitch = true,
@@ -280,16 +280,16 @@ local Library = {
     --// Scheme: Miku cyber (dark slate + turquoise) \\--
     IsLightTheme = false,
     Scheme = {
-        BackgroundColor = Color3.fromRGB(20, 24, 31),
-        MainColor = Color3.fromRGB(28, 34, 43),
-        AccentColor = Color3.fromRGB(57, 224, 203),
-        OutlineColor = Color3.fromRGB(48, 60, 70),
-        FontColor = Color3.fromRGB(225, 241, 240),
+        BackgroundColor = Color3.fromRGB(18, 22, 29),
+        MainColor = Color3.fromRGB(26, 32, 40),
+        AccentColor = Color3.fromRGB(54, 225, 205),
+        OutlineColor = Color3.fromRGB(44, 56, 66),
+        FontColor = Color3.fromRGB(231, 241, 242),
         Font = Font.fromEnum(Enum.Font.BuilderSans),
 
         RedColor = Color3.fromRGB(255, 91, 112),
         DestructiveColor = Color3.fromRGB(235, 73, 96),
-        DarkColor = Color3.fromRGB(10, 13, 18),
+        DarkColor = Color3.fromRGB(11, 14, 19),
         WhiteColor = Color3.new(1, 1, 1),
 
         BackgroundImage = ""
@@ -392,7 +392,7 @@ local Templates = {
         Footer = "No Footer",
 
         Position = UDim2.fromOffset(6, 6),
-        Size = UDim2.fromOffset(720, 600),
+        Size = UDim2.fromOffset(840, 620),
         IconSize = UDim2.fromOffset(30, 30),
 
         AutoShow = true,
@@ -407,7 +407,7 @@ local Templates = {
         SnapAvoidCoreGui = true,
 
         SearchbarSize = UDim2.fromScale(1, 1),
-        GlobalSearch = false,
+        GlobalSearch = true,
 
         CornerRadius = 8,
         NotifySide = "Right",
@@ -421,14 +421,14 @@ local Templates = {
 
         UnlockMouseWhileOpen = true,
 
-        EnableSidebarResize = false,
+        EnableSidebarResize = true,
         EnableCompacting = true,
         DisableCompactingSnap = false,
         SidebarCompacted = false,
         MinContainerWidth = 256,
 
         --// Snapping \\--
-        MinSidebarWidth = 128,
+        MinSidebarWidth = 148,
         SidebarCompactWidth = 48,
         SidebarCollapseThreshold = 0.5,
 
@@ -440,21 +440,21 @@ local Templates = {
 
         --// Animations \\--
         Animations = {
-            ToggleWindow = false,
-            TabSwitch = false,
-            Groupbox = false,
-            Dropdown = false,
-            KeyPicker = false,
+            ToggleWindow = true,
+            TabSwitch = true,
+            Groupbox = true,
+            Dropdown = true,
+            KeyPicker = true,
         },
 
-        TabTransitionTime = 0.22,
-        TabSwipeOffset = 26,
+        TabTransitionTime = 0.16,
+        TabSwipeOffset = 18,
         TabSwipeFrom = "right",
         TabButtonsStyle = {
-            Gap = 0,
-            Padding = 0,
-            CornerRadius = 0,
-            Indicator = false,
+            Gap = 4,
+            Padding = 4,
+            CornerRadius = 7,
+            Indicator = true,
             IndicatorWidth = 2,
             IndicatorHeight = 20,
         },
@@ -7655,7 +7655,7 @@ do
             Parent = Checkbox,
         })
 
-        -- Pop coquette: a caixinha cresce com mola quando marcada
+        -- Subtle scale feedback keeps the checkbox responsive without a heavy bounce
         local CheckboxPop = New("UIScale", {
             Scale = 1,
             Parent = Checkbox,
@@ -7969,7 +7969,7 @@ do
             TweenService:Create(Label, Library.TweenInfo, {
                 TextTransparency = Toggle.Value and 0 or 0.4,
             }):Play()
-            -- Mola coquette: a bolinha chega quicando no lugar
+            -- Short easing keeps the switch movement crisp
             TweenService:Create(Ball, Library.SwitchTweenInfo, {
                 AnchorPoint = Vector2.new(Offset, 0),
                 Position = UDim2.fromScale(Offset, 0),
@@ -12073,7 +12073,7 @@ function Library:CreateWindow(WindowInfo)
             BackgroundTransparency = 1,
             Size = UDim2.fromOffset(0, 0),
             Text = WindowInfo.Title,
-            TextSize = 20,
+            TextSize = 18,
             TextTruncate = Enum.TextTruncate.AtEnd,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Center,
@@ -12160,9 +12160,11 @@ function Library:CreateWindow(WindowInfo)
 
         SearchBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
-            PlaceholderText = "Search",
+            PlaceholderText = "Search controls...",
             Size = WindowInfo.SearchbarSize,
-            TextScaled = true,
+            TextScaled = false,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
             Visible = not (WindowInfo.DisableSearch or false),
             Parent = RightWrapper,
         })
@@ -12178,10 +12180,10 @@ function Library:CreateWindow(WindowInfo)
             })
         )
         New("UIPadding", {
-            PaddingBottom = UDim.new(0, 8),
-            PaddingLeft = UDim.new(0, 8),
-            PaddingRight = UDim.new(0, 8),
-            PaddingTop = UDim.new(0, 8),
+            PaddingBottom = UDim.new(0, 4),
+            PaddingLeft = UDim.new(0, 34),
+            PaddingRight = UDim.new(0, 12),
+            PaddingTop = UDim.new(0, 4),
             Parent = SearchBox,
         })
         local SearchBoxStroke = New("UIStroke", {
@@ -12804,7 +12806,7 @@ function Library:CreateWindow(WindowInfo)
                 Position = UDim2.fromOffset(30, 0),
                 Size = UDim2.new(1, -30, 1, 0),
                 Text = Name,
-                TextSize = 16,
+                TextSize = 14,
                 TextTransparency = 0.5,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Visible = not IsCompact,
@@ -14440,7 +14442,7 @@ function Library:CreateWindow(WindowInfo)
                 Position = UDim2.fromOffset(30, 0),
                 Size = UDim2.new(1, -30, 1, 0),
                 Text = Name,
-                TextSize = 16,
+                TextSize = 14,
                 TextTransparency = 0.5,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Visible = not IsCompact,
@@ -14833,7 +14835,7 @@ function Library:CreateWindow(WindowInfo)
                 Position = UDim2.fromOffset(30, 0),
                 Size = UDim2.new(1, -30, 1, 0),
                 Text = Name,
-                TextSize = 16,
+                TextSize = 14,
                 TextTransparency = 0.5,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Visible = not IsCompact,
@@ -15186,11 +15188,11 @@ function Library:CreateWindow(WindowInfo)
             Parent = TitleRow,
         })
 
-        --// Coracaonho coquette antes do titulo (tintido com o accent) \\--
+        --// Small Miku signature accent before the title \\--
         New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromOffset(16, 18),
-            Text = "\u{2661}",
+            Text = "\u{2726}",
             TextSize = 16,
             TextColor3 = "AccentColor",
             TextXAlignment = Enum.TextXAlignment.Left,
